@@ -50,8 +50,8 @@ class CustomerAuthController extends Controller
             ], 401);
         }
     }
-    
-        public function register(Request $request)
+           
+    public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'f_name' => 'required',
@@ -80,4 +80,18 @@ class CustomerAuthController extends Controller
        
         return response()->json(['token' => $token,'is_phone_verified' => 0, 'phone_verify_end_url'=>"api/v1/auth/verify-phone" ], 200);
     }
+
+    
+
+    public function delete(Request $request, $id ){
+
+
+        //$user = User::where(['email' => "e@e.com"])->update(["f_name" => ""]);
+        $user = User::where(['id' => $id])->update(["f_name" => "-", "phone" => "-", "password"=>"-", "email" => "deleted_account_" . strval($id) ]);
+        
+
+        //$user = User::where(['id' => 76])->delete();
+        return response()->json($user, 200);
+    }
+
 }

@@ -24,6 +24,8 @@ class ConfigController extends Controller
             return response()->json(['errors' => Helpers::error_processor($validator)], 403);
         }
         $response = Http::get('https://maps.googleapis.com/maps/api/geocode/json?latlng='.$request->lat.','.$request->lng.'&key='."AIzaSyA7bGVqm7Q6wnrIbKZHZ4ZxiEtwPYkjQJw");
+        //EGENIN KEY
+        //AIzaSyD7GbaT3_pCgN-1FK6WRWwXE1K9mW-aMXA
         return $response->json();
     }
         public function get_zone(Request $request)
