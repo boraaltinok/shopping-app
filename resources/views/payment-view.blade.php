@@ -71,6 +71,19 @@
                             </div>
                         </div>
                     @endif
+                    <div class="col-md-6 mb-4" style="cursor: pointer">
+                            <div class="card">
+                                <div class="card-body pb-0 pt-1" style="height: 70px">
+                                    <form method="POST" id="payment-form"
+                                          action="{{route('pay-door')}}">
+                                        {{ csrf_field() }}
+                                        <button class="btn btn-block" type="submit">
+                                            <h1>Pay on the door</h1>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
 
 
                 </div>

@@ -21,6 +21,7 @@ Route::group(['prefix' => 'payment-mobile'], function () {
     Route::get('set-payment-method/{name}', 'PaymentController@set_payment_method')->name('set-payment-method');
 });
 Route::any('pay-paypal', 'PaypalPaymentController@payWithpaypal')->name('pay-paypal');
+Route::any('pay-door', 'PaypalPaymentController@payAtDoor')->name('pay-door');
 Route::get('paypal-status', 'PaypalPaymentController@getPaymentStatus')->name('paypal-status');
 Route::get('payment-success', 'PaymentController@success')->name('payment-success');
 Route::get('payment-fail', 'PaymentController@fail')->name('payment-fail');

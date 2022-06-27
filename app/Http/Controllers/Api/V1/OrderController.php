@@ -20,7 +20,7 @@ class OrderController extends Controller
             //'longitude' => 'required_if:order_type,delivery',
            // 'latitude' => 'required_if:order_type,delivery',
         ]);
-
+        
         if ($validator->fails()) {
             return response()->json(['errors' => Helpers::error_processor($validator)], 403);
         }
@@ -45,6 +45,7 @@ class OrderController extends Controller
         $order->pending = now(); //checked
         $order->created_at = now(); //checked
         $order->updated_at = now();//checked
+        
         
         foreach ($request['cart'] as $c) {
      
@@ -116,6 +117,58 @@ class OrderController extends Controller
 
         return response()->json($orders, 200);
     }
+
+        // returns every order without authorisation
+        public function get_all_order_list(Request $request)
+        {
+            $orders = Order::withCount('details')->get()->map(function ($data) {
+                $data['delivery_address'] = $data['delivery_address'] ? json_decode($data['delivery_address']) : $data['delivery_address'];
+    
+                return $data;
+            });
+            return response()->json($orders, 200);
+        }
+
+        public function markAsDelivered(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            //'payment_method' => 'required',
+            'id' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => Helpers::error_processor($validator)], 403);
+        }
+
+        $order = Order::where("id", $request->id)->update([
+            "delivered" => $request->delivered,
+        ]);
+
+        return response()->json(["order" => $order]);
+    }
+
+    public function markAsPayOnDoor(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => Helpers::error_processor($validator)], 403);
+        }
+
+        $order = Order::where("id", $request->id)->update([
+            "payment_method" => "pay_on_door",
+        ]);
+
+        return response()->json(["order" => $order]);
+    }
+
+    /** ORDER DETAILS */
+    public function getOrderDetail(Request $request, $myid)
+    {
+        $orders = OrderDetail::where(['order_id' => $myid])->get();
+        return response()->json($orders, 200);
+    }
+    
     public function get_all_orders()
     {
         $orders = Order::withCount('details')->get()->map(function ($data) {

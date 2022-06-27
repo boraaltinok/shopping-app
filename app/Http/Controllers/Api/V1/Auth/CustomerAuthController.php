@@ -65,7 +65,10 @@ class CustomerAuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => "Failed Validation"], 403);
+            //return response()->json(['errors' => "Failed Validation"], 403);
+
+            return response()->json(['errors' => Helpers::error_processor($validator)], 403);
+
         }
         $user = User::create([
             'f_name' => $request->f_name,
@@ -85,12 +88,7 @@ class CustomerAuthController extends Controller
 
     public function delete(Request $request, $id ){
 
-
-        //$user = User::where(['email' => "e@e.com"])->update(["f_name" => ""]);
-        $user = User::where(['id' => $id])->update(["f_name" => "-", "phone" => "-", "password"=>"-", "email" => "deleted_account_" . strval($id) ]);
-        
-
-        //$user = User::where(['id' => 76])->delete();
+        $user = User::where(['id' => $id])->update(["f_name" => "-", "phone" => "-", "password"=>"-", "email" => "deleted_account_" . strval($id) ]);        
         return response()->json($user, 200);
     }
 

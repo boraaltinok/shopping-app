@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use Brian2694\Toastr\Facades\Toastr;
 use App\CentralLogics\Helpers;
 use App\CentralLogics\OrderLogic;
@@ -27,27 +29,54 @@ use PayPal\Rest\ApiContext;
 
 class PaypalPaymentController extends Controller
 {
-        public function __construct()
+    public function __construct()
     {
         $paypal_conf = Config::get('paypal');
-        
-        $this->_api_context =  new \PayPal\Rest\ApiContext(new OAuthTokenCredential(
+
+        $this->_api_context =  new \PayPal\Rest\ApiContext(
+            new OAuthTokenCredential(
                 $paypal_conf['client_id'],
-                $paypal_conf['secret'])
+                $paypal_conf['secret']
+            )
         );
         $this->_api_context->setConfig($paypal_conf['settings']);
     }
 
+    public function payAtDoor(Request $request)
+    {
+
+
+        $order = Order::with(['details'])->where(['id' => session('order_id')])->first();
+
+        DB::table('orders')
+            ->where('id', $order->id)
+            ->update([
+
+                'payment_method' => 'door',
+                'payment_status' => 'paid',
+                'order_status' => 'success',
+                'failed' => now(),
+                'updated_at' => now()
+            ]);
+
+        $redirect_urls = new RedirectUrls();
+        $redirect_urls->setReturnUrl(URL::route('payment-success'));
+        return redirect('&status=success');
+    }
+
+
+
+
+
     public function payWithpaypal(Request $request)
     {
         //dd("session id " . session('order_id'));
-       
+
         $order = Order::with(['details'])->where(['id' => session('order_id')])->first();
         //dd("order = " .$order);
-        if(isset($order)){
+        if (isset($order)) {
             //dd("setted");
-        }
-        else{
+        } else {
             //dd("not setted");
         }
 
@@ -65,14 +94,14 @@ class PaypalPaymentController extends Controller
             ->setCurrency(Helpers::currency_code())
             ->setQuantity(1)
             ->setPrice($number);
-         
+
         array_push($items_array, $item);
 
         $item_list = new ItemList();
         $item_list->setItems($items_array);
 
         $amount = new Amount();
-     
+
         $amount->setCurrency(Helpers::currency_code())
             ->setTotal($number);
         \session()->put('transaction_reference', $tr_ref);
@@ -80,10 +109,10 @@ class PaypalPaymentController extends Controller
         $transaction->setAmount($amount)
             ->setItemList($item_list)
             ->setDescription($tr_ref);
-       
+
         $redirect_urls = new RedirectUrls();
         $redirect_urls->setReturnUrl(URL::route('paypal-status'))
-        ->setCancelUrl(URL::route('payment-fail'));
+            ->setCancelUrl(URL::route('payment-fail'));
 
         $payment = new Payment();
         $payment->setIntent('Sale')
@@ -96,24 +125,23 @@ class PaypalPaymentController extends Controller
 
 
 
-             /**
-         * Get redirect url
-         * The API response provides the url that you must redirect
-         * the buyer to. Retrieve the url from the $payment->getLinks() method
-         *
-         */
+            /**
+             * Get redirect url
+             * The API response provides the url that you must redirect
+             * the buyer to. Retrieve the url from the $payment->getLinks() method
+             *
+             */
 
-        foreach ($payment->getLinks() as $key => $link) {
-            
-            if ($link->getRel() == 'approval_url') {
-                
-                $redirectUrl = $link->getHref();
-                
-                break;
+            foreach ($payment->getLinks() as $key => $link) {
+
+                if ($link->getRel() == 'approval_url') {
+
+                    $redirectUrl = $link->getHref();
+
+                    break;
+                }
             }
-    
-        }
-     
+
             DB::table('orders')
                 ->where('id', $order->id)
                 ->update([
@@ -123,28 +151,30 @@ class PaypalPaymentController extends Controller
                     'failed' => now(),
                     'updated_at' => now()
                 ]);
-       
+
             Session::put('paypal_payment_id', $payment->getId());
-             
+
             if (isset($redirectUrl)) {
-             
+
                 return Redirect::away($redirectUrl);
-            }else{
+            } else {
                 dd("bye");
             }
-
         } catch (\Exception $ex) {
-           //dd($ex->getData());
-               //   Toastr::error(trans($ex->getData(),['method'=>trans('messages.paypal')]));
+            //dd($ex->getData());
+            //   Toastr::error(trans($ex->getData(),['method'=>trans('messages.paypal')]));
 
-            Toastr::error(trans('messages.your_currency_is_not_supported',['method'=>trans('messages.paypal')]));
+            Toastr::error(trans('messages.your_currency_is_not_supported', ['method' => trans('messages.paypal')]));
             return back();
         }
         //dd("here");
-        Session::put('error', trans('messages.config_your_account',['method'=>trans('messages.paypal')]));
+        Session::put('error', trans('messages.config_your_account', ['method' => trans('messages.paypal')]));
         return back();
     }
-    
+
+
+
+
     public function getPaymentStatus(Request $request)
     {
         $payment_id = Session::get('paypal_payment_id');

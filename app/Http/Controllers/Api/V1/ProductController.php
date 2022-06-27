@@ -29,6 +29,10 @@ class ProductController extends Controller
          return response()->json($data, 200);
  
     }
+        public function find_product(Request $request, $productid){
+            $product = Food::where(['id' => $productid])->get();
+            return response()->json($product, 200);
+        }
         public function get_recommended_products(Request $request){
         $list = Food::where('type_id', 3)->take(10)->orderBy('created_at', 'DESC')->get();
         

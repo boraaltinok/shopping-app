@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,28 +16,38 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['namespace' => 'Api\V1'], function () {
 
-        Route::group(['prefix' => 'products'], function () {
-            Route::get('popular', 'ProductController@get_popular_products');
-            Route::get('recommended', 'ProductController@get_recommended_products');
-            Route::get('drniks', 'ProductController@get_drinks');
-            Route::get('test', 'ProductController@test_get_recommended_products');
-        }); 
+    Route::group(['prefix' => 'products'], function () {
+        Route::get('popular', 'ProductController@get_popular_products');
+        Route::get('recommended', 'ProductController@get_recommended_products');
+        Route::get('drniks', 'ProductController@get_drinks');
+        Route::get('find-product/{id}', 'ProductController@find_product');
+        Route::get('test', 'ProductController@test_get_recommended_products');
+    });
 
-        //registiration and login
-        Route::group(['prefix' => 'auth', 'namespace' => 'Auth'], function () {
-            Route::post('register', 'CustomerAuthController@register');
-            Route::post('login', 'CustomerAuthController@login');
-            Route::delete('delete/{id}','CustomerAuthController@delete');
-        });
-   
-        
-        Route::group(['prefix' => 'customer', 'middleware' => 'auth:api'], function () {
-            Route::get('notifications', 'NotificationController@get_notifications');
-            Route::get('info', 'CustomerController@info');
-            Route::post('update-profile', 'CustomerController@update_profile');
-            Route::post('update-interest', 'CustomerController@update_interest');
-            Route::put('cm-firebase-token', 'CustomerController@update_cm_firebase_token');
-            Route::get('suggested-foods', 'CustomerController@get_suggested_food');
+    //registiration and login
+    Route::group(['prefix' => 'auth', 'namespace' => 'Auth'], function () {
+        Route::post('register', 'CustomerAuthController@register');
+        Route::post('login', 'CustomerAuthController@login');
+        Route::delete('delete/{id}', 'CustomerAuthController@delete');
+    });
+
+
+    Route::group(['prefix' => 'customer/order'], function () {
+        Route::get('all', 'OrderController@get_all_order_list');
+        Route::patch('mark-as-delivered', 'OrderController@markAsDelivered');
+        Route::patch('mark-as-pay-on-door', 'OrderController@markAsPayOnDoor');
+        Route::get('detail/{id}', 'OrderController@getOrderDetail');
+    });
+
+
+
+    Route::group(['prefix' => 'customer', 'middleware' => 'auth:api'], function () {
+        Route::get('notifications', 'NotificationController@get_notifications');
+        Route::get('info', 'CustomerController@info');
+        Route::post('update-profile', 'CustomerController@update_profile');
+        Route::post('update-interest', 'CustomerController@update_interest');
+        Route::put('cm-firebase-token', 'CustomerController@update_cm_firebase_token');
+        Route::get('suggested-foods', 'CustomerController@get_suggested_food');
 
         Route::group(['prefix' => 'address'], function () {
             Route::get('list', 'CustomerController@address_list');
@@ -45,7 +56,11 @@ Route::group(['namespace' => 'Api\V1'], function () {
             Route::delete('delete', 'CustomerController@delete_address');
         });
 
-                Route::group(['prefix' => 'order'], function () {
+        Route::group(['prefix' => 'order'], function () {
+            //Route::get('all', 'OrderController@get_all_order_list');
+            //Route::patch('mark-as-delivered', 'OrderController@markAsDelivered');
+            //Route::patch('mark-as-pay-on-door', 'OrderController@markAsPayOnDoor');
+            //Route::get('detail/{id}', 'OrderController@getOrderDetail');
             Route::post('place', 'OrderController@place_order');
             Route::get('list', 'OrderController@get_order_list');
             Route::get('running-orders', 'OrderController@get_running_orders');
@@ -58,9 +73,9 @@ Route::group(['namespace' => 'Api\V1'], function () {
             Route::get('track', 'OrderController@track_order');
             Route::put('payment-method', 'OrderController@update_payment_method');
         });
-            });
-            
-        Route::group(['prefix' => 'config'], function () {
+    });
+
+    Route::group(['prefix' => 'config'], function () {
         Route::get('/', 'ConfigController@configuration');
         Route::get('/get-zone-id', 'ConfigController@get_zone');
         Route::get('place-api-autocomplete', 'ConfigController@place_api_autocomplete');

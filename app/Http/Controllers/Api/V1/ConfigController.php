@@ -35,18 +35,18 @@ class ConfigController extends Controller
             'lat' => 'required',
             'lng' => 'required',
         ]);
-        echo "CHECKPOINT 1";
+
 
         if ($validator->errors()->count()>0) {
             return response()->json(['errors' => Helpers::error_processor($validator)], 403);
         }
-        echo "CHECKPOINT 2";
+
 
         $point = new Point($request->lat,$request->lng);
-        echo "CHECKPOINT ";
+
 
         $zones = Zone::contains('coordinates', $point)->latest()->get();
-        echo "CHECKPOINT 4";
+
 
        /* if(count($zones)<1)
         {
